@@ -1,5 +1,6 @@
 import pylatex
 import lecture_resultat
+import time
 
 def generer_rapport(
         fichier='C:/Users/godef/Downloads/resultats-definitifs-par-circonscriptions-legislatives.xlsx',
@@ -14,17 +15,18 @@ def generer_rapport(
     :param liste_tranches: Liste des tranches de pourcentage à inclure dans le rapport.
     :return: Objet pylatex.Document représentant le rapport généré.
     """
-    resultats = lecture_resultat.lecture_resultat(fichier)
-    
+    tps_total_debut = time.time() 
     doc = pylatex.Document()
     doc.preamble.append(pylatex.Command('title', 'Rapport des résultats par parti'))
     doc.preamble.append(pylatex.Command('author', 'Analyse Électorale Automatisée par Godefroy Lecluse'))
     doc.append(pylatex.Command('maketitle'))
     
+    print('debut génération rapport LaTeX...')
     liste_departements = lecture_resultat.get_departements(fichier)
-
+    n_dep = 0
     for code_dept, nom_dept in liste_departements:
-        
+        print(f'Génération du rapport pour le département {nom_dept} ({code_dept})...')
+        t1 = time.time()
         with doc.create(pylatex.Section(f'Département: {nom_dept} ({code_dept})')):
             tableau = pylatex.Tabular(f'l|l|l|l|{'l|' * len(liste_tranches)}')
             tableau.add_hline()
@@ -63,9 +65,15 @@ def generer_rapport(
                 tableau.add_hline()
             
             doc.append(tableau)
-
+        t2 = time.time()
+        print(f'Temps de génération pour le département {nom_dept} ({code_dept}) nombre circo {len(liste_circos_dept)}: {t2 - t1:.2f} secondes')
+        n_dep += 1
+        print(f'Progression: {n_dep}/{len(liste_departements)} départements traités.')
+    tps_total_traitement = time.time() 
+    print(f'Temps total de traitement des départements: {tps_total_traitement - tps_total_debut:.2f} secondes')
     doc.generate_pdf('rapport_election', clean_tex=True)
-
+    tps_total_fin = time.time() 
+    print(f'Temps total de génération du rapport: {tps_total_fin - tps_total_debut:.2f} secondes')
     return None
 
 if __name__ == "__main__":
