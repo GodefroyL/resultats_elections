@@ -5,7 +5,7 @@ import time
 def generer_rapport(
         fichier='C:/Users/godef/Downloads/resultats-definitifs-par-circonscriptions-legislatives.xlsx',
         parti_etudie=('RN', 'UXD'),
-        liste_tranches=[47, 45, 40, 35, 30]):
+        liste_tranches=[47, 45, 43, 40, 35, 30]):
     tps_total_debut = time.time()
     doc = Document()
 
@@ -24,7 +24,8 @@ def generer_rapport(
 
     for code_dept, nom_dept in liste_departements:
         with doc.create(Section(f'Département: {nom_dept} ({code_dept})')):
-            with doc.create(LongTabularx(f'|p{{1.5cm}}|p{{2.3cm}}|X|{f"p{{1.7cm}}|" * (len(liste_tranches) + 1)}', width_argument=NoEscape(r'\textwidth'))) as tableau:
+            taille_cellule_tranche = str(10/(len(liste_tranches)+1)) + 'cm'
+            with doc.create(LongTabularx(f'|p{{1.5cm}}|p{{2.3cm}}|X|{f"p{{{taille_cellule_tranche}}}|" * (len(liste_tranches) + 1)}', width_argument=NoEscape(r'\textwidth'))) as tableau:
                 # Ajout ligne en-tête
                 tableau.add_hline()
                 tableau.add_row(['Circo', '2nd tour', 'élu T1'] + [f' + de {liste_tranches[i]}%' for i in range(len(liste_tranches))] + [f' - de {liste_tranches[-1]}%'])
@@ -89,4 +90,4 @@ def generer_rapport(
     print(f'Temps total de génération du rapport: {tps_total_fin - tps_total_debut:.2f} secondes')
 
 if __name__ == '__main__':
-    generer_rapport(parti_etudie=('RN', 'UXD'), liste_tranches=[47, 45, 40, 35, 30])
+    generer_rapport()
