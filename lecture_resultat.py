@@ -88,7 +88,7 @@ def get_resultats_parti(fichier, code_circo, parti):
     :param fichier: Fichier Excel contenant les résultats des élections législatives.
     :param code_circo: Code de la circonscription à rechercher.
     :param parti: Nom du parti politique à rechercher.
-    :return: Dictionnaire contenant les informations du candidat du parti spécifié.
+    :return: pourcentage_voix, second_tour_possible (bool), elu (bool)
     """
     resultat_circo = get_resultats_circo(fichier, code_circo, affichage_nom=False, affichage_parti=False)
     for candidat_info in resultat_circo.values():
@@ -110,10 +110,19 @@ def get_departements(fichier):
     :return: Liste des départements.
     """
     resultats = lecture_resultat(fichier)
-    departements = set()
+    set_departements = set()
+    departements = []
     for circo_info in resultats.values():
-        departements.add((circo_info.get('code_departement'), circo_info.get('departement')))
-    return list(departements)
+        departements.append((circo_info.get('code_departement'), circo_info.get('departement')))
+        set_departements.add((circo_info.get('code_departement'), circo_info.get('departement')))
+
+    returned_departements = []
+    for dep in departements:
+        if dep in set_departements:
+            returned_departements.append(dep)
+            set_departements.remove(dep)
+
+    return returned_departements
 
 
 def get_circonscriptions(fichier, code_departement):
@@ -147,7 +156,41 @@ def get_partis(fichier):
     return list(partis)
 
 
+def get_partis_circonscription(fichier, code_circo):
+    """
+    Récupère la liste des partis politiques présents dans une circonscription donnée.
+    
+    :param fichier: Fichier Excel contenant les résultats des élections législatives.
+    :param code_circo: Code de la circonscription à rechercher.
+    :return: Liste des partis politiques dans la circonscription spécifiée.
+    """
+    resultat_circo = get_resultats_circo(fichier, code_circo, affichage_nom=False, affichage_parti=False)
+    partis = set()
+    for candidat_info in resultat_circo.values():
+        partis.add(candidat_info['parti'])
+    return list(partis)
+
+
+def elu_premier_tour(fichier: str, code_circo: int) -> tuple[bool, str]:
+    """
+    Vérifie si un candidat est élu au premier tour dans une circonscription donnée.
+    
+    :param fichier: Fichier Excel contenant les résultats des élections législatives.
+    :param code_circo: Code de la circonscription à rechercher.
+    :return: True si le parti a un candidat élu au premier tour, False sinon.
+    """
+    resultat_circo = get_resultats_circo(fichier, code_circo, affichage_nom=False, affichage_parti=False)
+    for candidat_info in resultat_circo.values():
+        elu = False
+        parti_elu = ''
+        score = '0%'
+        if float(candidat_info.get('pourcentage/inscrit').replace('%', '').replace(',', '.')) >= 25 and float(candidat_info.get('pourcentage/votant').replace('%', '').replace(',', '.')) > 50:
+            elu = True
+            parti_elu = candidat_info.get('parti')
+            score = candidat_info.get('pourcentage/votant')
+    return elu, parti_elu, score
+
+
 if __name__ == "__main__":
     fichier = 'C:/Users/godef/Downloads/resultats-definitifs-par-circonscriptions-legislatives.xlsx'
-    get_resultats_circo(fichier, circonscription_code=4103, affichage_nom=True, affichage_parti=True)
-    print(get_partis(fichier))
+    print(get_departements(fichier))
