@@ -25,13 +25,15 @@ def generer_rapport(
     for code_dept, nom_dept in liste_departements:
         with doc.create(Section(f'Département: {nom_dept} ({code_dept})')):
             taille_cellule_tranche = str(10/(len(liste_tranches)+1)) + 'cm'
+            
             with doc.create(LongTabularx(f'|p{{1.5cm}}|p{{2.3cm}}|X|{f"p{{{taille_cellule_tranche}}}|" * (len(liste_tranches) + 1)}', width_argument=NoEscape(r'\textwidth'))) as tableau:
-                # Ajout ligne en-tête
+            
+            # Ajout ligne en-tête
                 tableau.add_hline()
                 tableau.add_row(['Circo', '2nd tour', 'élu T1'] + [f' + de {liste_tranches[i]}%' for i in range(len(liste_tranches))] + [f' - de {liste_tranches[-1]}%'])
                 tableau.add_hline()
 
-                # Récupération des circonscriptions du département
+            # Récupération des circonscriptions du département
                 liste_circos_dept = lecture_resultat.get_circonscriptions(resultats_election, code_dept)
                 for circo_code, circo_nom in liste_circos_dept:
                     circo_nom = circo_nom.replace('nscription', '')
@@ -57,8 +59,10 @@ def generer_rapport(
                             else:
                                 parti = parti_etudie[0]
 
-                        # Récupération des résultats de la circonscription
+                    # Récupération des résultats de la circonscription
                         resultats_circo = lecture_resultat.get_resultats_circo(resultats_election, circo_code, affichage_nom=False, affichage_parti=False)
+
+                    # Recherche des candidats pouvant aller au second tour
                         second_tour_possible = []
                         for candidat_info in resultats_circo.values():
                             if float(candidat_info['pourcentage/votant'].replace('%', '').replace(',', '.')) >= 12.5:
@@ -67,10 +71,11 @@ def generer_rapport(
                         for candidat_info in sorted(second_tour_possible, key=lambda x: float(x['pourcentage/votant'].replace('%', '').replace(',', '.')), reverse=True):
                             string_second_tour += f"{candidat_info.get('parti')} : {candidat_info.get('pourcentage/votant')} \n"
 
-                        # Récupération des résultats des candidats pour le parti étudié
+                    # Récupération des résultats des candidats pour le parti étudié
                         pourcentage_parti_string, _, _ = lecture_resultat.get_resultats_parti(resultats_election, circo_code, parti)
                         pourcentage_parti = float(pourcentage_parti_string.replace('%', '').replace(',', '.'))
 
+                    # Remplissage du tableau avec les tranches atteintes
                         tranche_atteinte = [''] * len(liste_tranches) + ['']
                         bool_tranche_atteinte = False
                         for i in range(len(liste_tranches)):
@@ -80,12 +85,17 @@ def generer_rapport(
                                 break
                         if not bool_tranche_atteinte:
                             tranche_atteinte[-1] = 'X'
+
+                    # Ajout de la ligne au tableau
                         tableau.add_row([circo_nom, string_second_tour, ''] + tranche_atteinte)
                         tableau.add_hline()
 
     tps_total_traitement = time.time()
     print(f'Temps total de traitement des départements: {tps_total_traitement - tps_total_debut:.2f} secondes')
+
+# Génération du PDF
     doc.generate_pdf(f'rapport_election_{"-".join(parti_etudie)}', clean_tex=True)
+
     tps_total_fin = time.time()
     print(f'Temps total de génération du rapport: {tps_total_fin - tps_total_debut:.2f} secondes')
 
