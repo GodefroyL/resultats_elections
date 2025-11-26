@@ -27,13 +27,7 @@
 #             break
 
 
-liste = [1,2,3]
-for item in liste:
-    print(f'chiffre = {item}')
-    for i in range(len(liste)):
-        print(liste[i])
-        if liste[i] == 2:
-            print("trouvé")
-            continue
-        print("pas 2")
-        print("pas trouvé")
+parti = ('RN', 'UXD')
+print('RN' in parti)
+print('LFI' in parti)
+print('UXD' in parti)
