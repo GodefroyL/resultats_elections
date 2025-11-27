@@ -65,11 +65,20 @@ def generer_rapport(
                     # Recherche des candidats pouvant aller au second tour
                         second_tour_possible = []
                         for candidat_info in resultats_circo.values():
-                            if float(candidat_info['pourcentage/votant'].replace('%', '').replace(',', '.')) >= 12.5:
+                            if float(candidat_info['pourcentage/inscrit'].replace('%', '').replace(',', '.')) >= 12.5:
                                 second_tour_possible.append(candidat_info)
+                        
+                        if len(second_tour_possible) < 2:
+                        # Ajouter les deux premiers si moins de deux candidats atteignent 12.5%
+                            sorted_candidats = sorted(resultats_circo.values(), key=lambda x: float(x['pourcentage/votant'].replace('%', '').replace(',', '.')), reverse=True)
+                            second_tour_possible = sorted_candidats[:2]
+
                         string_second_tour = ''
                         for candidat_info in sorted(second_tour_possible, key=lambda x: float(x['pourcentage/votant'].replace('%', '').replace(',', '.')), reverse=True):
-                            string_second_tour += f"{candidat_info.get('parti')} : {candidat_info.get('pourcentage/votant')} \n"
+                            string_second_tour += f"{candidat_info.get('parti')} : {candidat_info.get('pourcentage/votant')}\n"
+                    
+                    # Retirer le dernier saut de ligne
+                        string_second_tour = string_second_tour[:-1]
 
                     # Récupération des résultats des candidats pour le parti étudié
                         pourcentage_parti_string, _, _ = lecture_resultat.get_resultats_parti(resultats_election, circo_code, parti)

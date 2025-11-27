@@ -191,4 +191,4 @@ def elu_premier_tour(resultats: dict, code_circo: int) -> tuple[bool, str, str]:
 if __name__ == "__main__":
     fichier = 'C:/Users/godef/Downloads/resultats-definitifs-par-circonscriptions-legislatives.xlsx'
     resultat = lecture_resultat(fichier)
-    print(elu_premier_tour(resultat, 605))
+    print(get_resultats_circo(resultat, 202))
